@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import React, { useState, useTransition } from 'react'
 import CardWrapper from './CardWrapper'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -10,8 +10,12 @@ import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import FormError from '../form-error'
 import FormSuccess from '../form-success'
+import { login } from '@/actions/login'
 
 const LoginForm = () => {
+    const [error, setError] = useState<string | undefined>()
+    const [success, setSuccess] = useState<string | undefined>()
+    const [isPending, startTransition] = useTransition()
     const form = useForm<z.infer<typeof LoginSchema>>({
         resolver: zodResolver(LoginSchema),
         defaultValues: {
@@ -21,7 +25,16 @@ const LoginForm = () => {
     })
 
     const onSubmit = (values: z.infer<typeof LoginSchema>) => {
-        console.log(values)
+        setError("")
+        setSuccess("")
+
+        startTransition(() => {
+            login(values)
+                .then((data) => {
+                    setError(data.error)
+                    setSuccess(data.success)
+                })
+        })
     }
 
     return (
@@ -46,6 +59,7 @@ const LoginForm = () => {
                                     <FormControl>
                                         <Input
                                             {...field}
+                                            disabled={isPending}
                                             placeholder='john.doe@example.com'
                                             type='email'
                                         />
@@ -64,6 +78,7 @@ const LoginForm = () => {
                                     <FormControl>
                                         <Input
                                             {...field}
+                                            disabled={isPending}
                                             type='password'
                                         />
                                     </FormControl>
@@ -72,9 +87,9 @@ const LoginForm = () => {
                             )}
                         />
                     </div>
-                    <FormError message='' />
-                    <FormSuccess message='' />
-                    <Button type='submit' className='w-full'>
+                    <FormError message={error} />
+                    <FormSuccess message={success} />
+                    <Button type='submit' disabled={isPending} className='w-full'>
                         Login
                     </Button>
                 </form>
