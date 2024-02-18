@@ -8,6 +8,8 @@ import { db } from "./lib/db"
 export const { 
     handlers : {GET, POST}, 
     auth,
+    signIn,
+    signOut
  } = NextAuth({ 
        // providers: [ GitHub ] cod antes de criar middelware
        //cod após criar middleware
