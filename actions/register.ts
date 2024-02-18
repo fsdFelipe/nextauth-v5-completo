@@ -1,7 +1,9 @@
 'use server'
-
 import { RegisterSchema } from "@/schemas"
 import * as z  from "zod"
+import bcrypt from 'bcrypt'
+import { db } from "@/lib/db"
+import { getUserByEmail } from "@/data/user"
 
 export const register = async (values : z.infer<typeof RegisterSchema>) =>{
     const validatedFields = RegisterSchema.safeParse(values)
@@ -9,5 +11,35 @@ export const register = async (values : z.infer<typeof RegisterSchema>) =>{
     if(!validatedFields.success){
         return { error: "Invalid fields"}
     }
-    return { success: 'Bem vindo!'}
+
+    const { email, password, name } = validatedFields.data;
+    const hasedPassword = await bcrypt.hash(password, 10)
+
+    //verificar se email ja foi cadastrado cod inicial
+  /**   const userExists = await db.user.findUnique({
+        where:{
+            email,
+        }
+    })*/
+
+    //verificar se email ja foi cadastrado apos criado arquivo user.ts
+    const userExists = await getUserByEmail(email)
+
+    //se email ja foi cadastrado exibir:
+    if(userExists) {
+        return { error: "Email ja cadastrado"}
+    }
+
+    //se o email não existe no bd então criar novo user
+    await db.user.create({
+        data:{
+            name,
+            email,
+            password: hasedPassword,
+        }
+    })
+
+    //TODO: send verification token email
+
+    return { success: 'User Created!'}
 }
