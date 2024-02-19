@@ -16,6 +16,11 @@ export const {
        // providers: [ GitHub ] cod antes de criar middelware
        //cod após criar middleware
 
+       pages: {
+        signIn: '/auth/login',
+        error: '/auth/error'
+       },
+
        events: {
         async linkAccount({ user }) {
         await db.user.update({

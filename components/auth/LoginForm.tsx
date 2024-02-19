@@ -31,8 +31,9 @@ const LoginForm = () => {
         startTransition(() => {
             login(values)
                 .then((data) => {
-                    setError(data.error)
-                    setSuccess(data.success)
+                    setError(data?.error)
+                    //to do: add qnd add 2FA 
+                    //setSuccess(data?.success)
                 })
         })
     }
