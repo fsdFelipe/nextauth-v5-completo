@@ -15,16 +15,25 @@ export const {
  } = NextAuth({ 
        // providers: [ GitHub ] cod antes de criar middelware
        //cod após criar middleware
+
+       events: {
+        async linkAccount({ user }) {
+        await db.user.update({
+        where: { id: user.id },
+        data: { emailVerified: new Date() }
+                  })
+                  }
+                },  
        callbacks: {
-        async signIn({user}) {
-            const userExist = await getUserById(user.id as string);
+       // async signIn({user}) {
+         //   const userExist = await getUserById(user.id as string);
 
-            if(!userExist || !userExist.emailVerified){
-              return false
-            }
+       //     if(!userExist || !userExist.emailVerified){
+         //     return false
+           // }
 
-            return true
-        },
+            //return true
+        //},
 
         async session({ token, session}) {
 
