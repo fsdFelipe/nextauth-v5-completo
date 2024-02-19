@@ -16,6 +16,16 @@ export const {
        // providers: [ GitHub ] cod antes de criar middelware
        //cod após criar middleware
        callbacks: {
+        async signIn({user}) {
+            const userExist = await getUserById(user.id as string);
+
+            if(!userExist || !userExist.emailVerified){
+              return false
+            }
+
+            return true
+        },
+
         async session({ token, session}) {
 
           if(token.sub){
