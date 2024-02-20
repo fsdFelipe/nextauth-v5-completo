@@ -30,15 +30,17 @@ export const {
                   }
                 },  
        callbacks: {
-       // async signIn({user}) {
-         //   const userExist = await getUserById(user.id as string);
+       async signIn({ user, account }) {
+      // Allow OAuth without email verification
+      if (account?.provider !== "credentials") return true;
 
-       //     if(!userExist || !userExist.emailVerified){
-         //     return false
-           // }
+      const userExist = await getUserById(user.id!);
 
-            //return true
-        //},
+      // Prevent sign in without email verification
+      if (!userExist?.emailVerified) return false;
+
+      return true;
+    },
 
         async session({ token, session}) {
 

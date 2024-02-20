@@ -32,8 +32,7 @@ const LoginForm = () => {
             login(values)
                 .then((data) => {
                     setError(data?.error)
-                    //to do: add qnd add 2FA 
-                    //setSuccess(data?.success)
+                    setSuccess(data?.success)
                 })
         })
     }
