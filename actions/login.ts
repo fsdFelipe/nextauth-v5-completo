@@ -1,6 +1,7 @@
 'use server'
 
 import { signIn } from "@/auth"
+import { getAccountByUserId } from "@/data/accounts"
 import { getUserByEmail } from "@/data/user"
 import { sendVerificationEmail } from "@/lib/mail"
 import { generateVerificationToken } from "@/lib/tokens"
@@ -19,6 +20,11 @@ export const login = async (values : z.infer<typeof LoginSchema>) =>{
     const {email, password} = validatedFields.data;
 
     const userExist = await getUserByEmail(email);
+
+    if(userExist && userExist.email && !userExist.password){
+        const provider = await getAccountByUserId(userExist.id)
+        return { error: `Senha não cadastrada logue com ${provider?.provider}`}
+    }
 
     if(!userExist || !userExist.email || !userExist.password){
         return { error: "Email não cadastrado"}
