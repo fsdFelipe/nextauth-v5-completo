@@ -2,7 +2,10 @@
 
 import { signIn } from "@/auth"
 import { getAccountByUserId } from "@/data/accounts"
+import { getTwoFactorConfirmationByUserId } from "@/data/two-factor-confirmation"
+import { getTwoFactorTokenByEmail } from "@/data/two-factor-token"
 import { getUserByEmail } from "@/data/user"
+import { db } from "@/lib/db"
 import { sendTwoFactorTokenEmail, sendVerificationEmail } from "@/lib/mail"
 import { generateTwoFactorToken, generateVerificationToken } from "@/lib/tokens"
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes"
@@ -17,7 +20,7 @@ export const login = async (values : z.infer<typeof LoginSchema>) =>{
         return { error: "Invalid fields"}
     }
     
-    const {email, password} = validatedFields.data;
+    const {email, password, code}  = validatedFields.data;
 
     const userExist = await getUserByEmail(email);
 
@@ -47,11 +50,50 @@ export const login = async (values : z.infer<typeof LoginSchema>) =>{
     }
 
     if(userExist.isTwoFactorEnabled && userExist.email){
+        if(code){
+            const twoFactorToken = await getTwoFactorTokenByEmail(userExist.email)
+
+            if(!twoFactorToken){
+                return { error: "Codigo Inválido"}
+            }
+
+            if(twoFactorToken.token !== code){
+                return { error: 'Codigo inválido'}
+            }
+
+             const hasExpired = new Date(twoFactorToken.expires) < new Date();
+
+      if (hasExpired) {
+        return { error: "Code expired!" };
+      }
+
+      await db.twoFactorToken.delete({
+        where: { id: twoFactorToken.id }
+      });
+
+      const existingConfirmation = await getTwoFactorConfirmationByUserId(
+        userExist.id
+      );
+
+      if (existingConfirmation) {
+        await db.twoFactorConfirmation.delete({
+          where: { id: existingConfirmation.id }
+        });
+      }
+
+      await db.twoFactorConfirmation.create({
+        data: {
+          userId: userExist.id,
+        }
+      });
+        }else{
         const twoFactorToken = await generateTwoFactorToken(userExist.email)
         await sendTwoFactorTokenEmail(
             twoFactorToken.email,
             twoFactorToken.token
         )
+        return {twoFactor: true}
+        }
     }
 
     try {
@@ -71,4 +113,4 @@ export const login = async (values : z.infer<typeof LoginSchema>) =>{
         }
         throw error
     }
-}
+} 
