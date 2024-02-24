@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { auth } from "@/auth";
 import { SessionProvider } from "next-auth/react";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,6 +24,7 @@ export default async function RootLayout({
       <html lang="en">
         <body className={inter.className}>
           <main className="h-full bg-gradient-to-b from-teal-500 to-zinc-800">
+            <Toaster />
             {children}
           </main>
         </body>
