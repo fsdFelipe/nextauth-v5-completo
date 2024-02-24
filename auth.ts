@@ -7,12 +7,14 @@ import { db } from "./lib/db"
 import { getUserById } from "./data/user"
 import { UserRole } from "@prisma/client"
 import { getTwoFactorConfirmationByUserId } from "./data/two-factor-confirmation"
+import { getAccountByUserId } from "./data/accounts"
 
 export const { 
     handlers : {GET, POST}, 
     auth,
     signIn,
-    signOut
+    signOut,
+    unstable_update
  } = NextAuth({ 
        // providers: [ GitHub ] cod antes de criar middelware
        //cod após criar middleware
@@ -65,9 +67,14 @@ export const {
           }
 
           if (session.user) {
-        session.user.isTwoFactorEnabled = token.isTwoFactorEnabled as boolean;
+            session.user.isTwoFactorEnabled = token.isTwoFactorEnabled as boolean;
           }
 
+          if (session.user) {
+              session.user.name = token.name;
+              session.user.email = token.email as string;
+              session.user.isOAuth = token.isOAuth as boolean;
+          }
 
             return session
         },
@@ -78,8 +85,13 @@ export const {
 
           if (!userExist) return token;
 
+          const accountExist = await getAccountByUserId(userExist.id);
+
+          token.name = userExist.name;
+          token.email = userExist.email;
           token.role = userExist.role
           token.isTwoFactorEnabled = userExist.isTwoFactorEnabled;
+          token.isOAuth = !!accountExist
 
            return token 
         },
