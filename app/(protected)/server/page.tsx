@@ -4,6 +4,8 @@ import { UserInfo } from "@/components/user-info";
 const ServerPage = async () => {
     const user = await currentUser();
 
+    console.log(user?.isTwoFactorEnabled)
+
     return (
         <UserInfo
             label="💻 Server component"

@@ -79,7 +79,7 @@ export const {
           if (!userExist) return token;
 
           token.role = userExist.role
-          token.isTwoFactorEnaled = userExist.isTwoFactorEnabled;
+          token.isTwoFactorEnabled = userExist.isTwoFactorEnabled;
 
            return token 
         },
