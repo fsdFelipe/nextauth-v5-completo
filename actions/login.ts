@@ -7,6 +7,7 @@ import { getTwoFactorTokenByEmail } from "@/data/two-factor-token"
 import { getUserByEmail } from "@/data/user"
 import { db } from "@/lib/db"
 import { sendTwoFactorTokenEmail, sendVerificationEmail } from "@/lib/mail"
+import { sendTwoFactorTokenEmailsendGrid, sendVerificationEmailsendGrid } from "@/lib/sendGridMail"
 import { generateTwoFactorToken, generateVerificationToken } from "@/lib/tokens"
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes"
 import { LoginSchema } from "@/schemas"
@@ -35,8 +36,11 @@ export const login = async (values : z.infer<typeof LoginSchema>, callbackUrl?: 
 
     if(userExist.email && !userExist.emailVerified){
         const vericationToken = await generateVerificationToken(userExist.email);
-        //send verification token email
-        await sendVerificationEmail(vericationToken.email, vericationToken.token)
+        //send verification token email com resend
+        //await sendVerificationEmail(vericationToken.email, vericationToken.token)
+
+        //send verification token email com sendgrid
+        await sendVerificationEmailsendGrid(vericationToken.email, vericationToken.token)
         return { error: 'Email não verificado ! verifique seu email'}
     }
 
@@ -44,7 +48,10 @@ export const login = async (values : z.infer<typeof LoginSchema>, callbackUrl?: 
         const vericationToken = await generateVerificationToken(userExist.email);
 
         //send verification token email
-        await sendVerificationEmail(vericationToken.email, vericationToken.token)
+        //await sendVerificationEmail(vericationToken.email, vericationToken.token)
+
+        //send verification token email com sendgrid
+        await sendVerificationEmailsendGrid(vericationToken.email, vericationToken.token)
 
         return {success: "Email de confirmação enviado"}
     }
@@ -88,10 +95,13 @@ export const login = async (values : z.infer<typeof LoginSchema>, callbackUrl?: 
       });
         }else{
         const twoFactorToken = await generateTwoFactorToken(userExist.email)
-        await sendTwoFactorTokenEmail(
-            twoFactorToken.email,
-            twoFactorToken.token
-        )
+
+        //send 2FA token email com resend
+       // await sendTwoFactorTokenEmail(twoFactorToken.email, twoFactorToken.token)
+
+        //send 2FA token email com sendgrid
+        await sendTwoFactorTokenEmailsendGrid(twoFactorToken.email, twoFactorToken.token)
+        
         return {twoFactor: true}
         }
     }
